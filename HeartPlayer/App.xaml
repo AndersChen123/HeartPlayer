@@ -1,0 +1,19 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application x:Class="HeartPlayer.App"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:HeartPlayer.Converters"
+             xmlns:local="clr-namespace:HeartPlayer">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToStringConverter x:Key="BoolToStringConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
+            <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

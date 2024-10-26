@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.tenthapp.heartplayer">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:requestLegacyExternalStorage="true" android:supportsRtl="true" android:label="Heart Player">
+		<service android:name="communityToolkit.maui.media.services" android:exported="false" android:enabled="true" android:foregroundServiceType="mediaPlayback">
+			<intent-filter>
+				<action android:name="android.intent.action.MEDIA_BUTTON" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="androidx.media3.session.MediaSessionService" />
+			</intent-filter>
+		</service>
+	</application>
+	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT" />
+	<uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
+	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
+	<uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
+	<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+</manifest>
