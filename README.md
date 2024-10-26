@@ -2,7 +2,7 @@
 
 A video player based on MAUI MediaElement.
 
-Icons designed by x [Double-J Design](https://twitter.com/doublejdesign).
+Icons designed by [Double-J Design](https://twitter.com/doublejdesign).
 
 - Video Playlist Management
 - Folder Organization
