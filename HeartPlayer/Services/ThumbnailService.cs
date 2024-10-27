@@ -8,6 +8,7 @@ using LibVLCSharp.Shared;
 using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -15,8 +16,8 @@ namespace HeartPlayer.Services;
 
 public sealed class ThumbnailService
 {
-    private const uint Width = 320;
-    private const uint Height = 240;
+    private const uint Width = 240;
+    private const uint Height = 180;
 
     /// <summary>
     /// RGBA is used, so 4 byte per pixel, or 32 bits.
@@ -62,6 +63,12 @@ public sealed class ThumbnailService
     private static MemoryMappedFile CurrentMappedFile;
     private static MemoryMappedViewAccessor CurrentMappedViewAccessor;
     private static readonly ConcurrentQueue<(MemoryMappedFile file, MemoryMappedViewAccessor accessor)> FilesToProcess = new ConcurrentQueue<(MemoryMappedFile file, MemoryMappedViewAccessor accessor)>();
+
+    private async Task<ImageSource[]> GenerateMultipleThumbnailsAsync(IEnumerable<VideoFile> videos)
+    {
+        var tasks = videos.Select(v => GenerateThumbnailAsync(v));
+        return await Task.WhenAll(tasks);
+    }
 
     public async Task<ImageSource> GetThumbnailAsync(VideoFile video)
     {
@@ -117,7 +124,7 @@ public sealed class ThumbnailService
                 // Start recording
                 mediaPlayer.Play(media);
 
-                await Task.Delay(2000); // Wait for 1 second to ensure the video has started
+                await Task.Delay(1000); // Wait for 1 second to ensure the video has started
 
                 if (FilesToProcess.TryDequeue(out var file))
                 {
@@ -135,7 +142,11 @@ public sealed class ThumbnailService
                         using (var outputFile = File.Open(outputPath, FileMode.Create))
                         {
                             image.Mutate(ctx => ctx.Crop((int)Width, (int)Height));
-                            image.SaveAsJpeg(outputFile);
+                            var jpegEncoder = new JpegEncoder()
+                            {
+                                Quality = 75 // Adjust quality vs file size
+                            };
+                            image.SaveAsJpeg(outputFile, jpegEncoder);
                         }
                     }
                     file.accessor.Dispose();

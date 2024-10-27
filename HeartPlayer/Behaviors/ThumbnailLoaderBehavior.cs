@@ -51,6 +51,8 @@ namespace HeartPlayer.Behaviors
             var thumbnailService = Application.Current.Handler.MauiContext.Services.GetService<ThumbnailService>();
             if (thumbnailService == null) return;
 
+            if (videoFile.Thumbnail != null) return;
+
             var thumbnail = await thumbnailService.GetThumbnailAsync(videoFile);
             await MainThread.InvokeOnMainThreadAsync(
                       () =>

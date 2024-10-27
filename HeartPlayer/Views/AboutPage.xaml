@@ -27,7 +27,7 @@
                    Text="Version 1.0.0" />
 
             <Label HorizontalOptions="Center"
-                   Text="Icons designed by x Double-J Design"
+                   Text="Icons designed by Double-J Design"
                    TextColor="Blue"
                    TextDecorations="Underline">
                 <Label.GestureRecognizers>

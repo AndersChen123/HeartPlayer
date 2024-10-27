@@ -7,6 +7,8 @@ using HeartPlayer.ViewModels;
 using HeartPlayer.Views;
 using LibVLCSharp.Shared;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace HeartPlayer
 {
@@ -27,13 +29,17 @@ namespace HeartPlayer
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+#if ANDROID     
+            ImageHandler.Mapper.PrependToMapping(nameof(Microsoft.Maui.IImage.Source), (handler, view) => handler.PlatformView?.Clear());
+#endif
+
             Core.Initialize();
 
             builder.Services.AddSingleton<ThumbnailService>();
             builder.Services.AddSingleton<IFileService, FileService>();
 
             builder.Services.AddScoped<MainViewModel>();
-            builder.Services.AddScoped<PlaylistViewModel>();  
+            builder.Services.AddScoped<PlaylistViewModel>();
             builder.Services.AddScoped<SettingViewModel>();
             builder.Services.AddScoped<AboutViewModel>();
 
