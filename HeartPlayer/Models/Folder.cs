@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Serilog;
 
 namespace HeartPlayer.Models
 {
@@ -16,13 +17,21 @@ namespace HeartPlayer.Models
             Videos = new ObservableCollection<VideoFile>();
         }
 
+        public void AddVideo(VideoFile video)
+        {
+            if (!Videos.Contains(video))
+            {
+                Videos.Add(video);
+            }
+        }
+
         public void LoadVideos()
         {
             try
             {
                 Videos.Clear();
-                var videoFiles = Directory.GetFiles(Path, "*.*", SearchOption.AllDirectories)
-                                          .Where(file => IsVideoFile(file))
+                var videoFiles = Directory.EnumerateFiles(Path, "*.*", SearchOption.AllDirectories)
+                                          .Where(IsVideoFile)
                                           .Select(file => new VideoFile
                                           {
                                               Name = System.IO.Path.GetFileName(file),
@@ -39,7 +48,7 @@ namespace HeartPlayer.Models
             catch (Exception ex)
             {
                 // Handle or log the exception
-                Console.WriteLine($"Error loading videos for folder {Name}: {ex.Message}");
+                Log.Error(ex, $"Error loading videos for folder {Name}");
             }
         }
 

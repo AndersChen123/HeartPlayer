@@ -30,11 +30,18 @@ namespace HeartPlayer
             Core.Initialize();
 
             builder.Services.AddSingleton<ThumbnailService>();
+            builder.Services.AddSingleton<IFileService, FileService>();
 
             builder.Services.AddScoped<MainViewModel>();
-            builder.Services.AddScoped<PlaylistViewModel>();            
+            builder.Services.AddScoped<PlaylistViewModel>();  
+            builder.Services.AddScoped<SettingViewModel>();
             builder.Services.AddScoped<AboutViewModel>();
+
             builder.Services.AddScoped<MainPage>();
+            builder.Services.AddScoped<PlaylistPage>();
+            builder.Services.AddScoped<SettingPage>();
+            builder.Services.AddScoped<AboutPage>();
+            builder.Services.AddScoped<VideoPlayerPage>();
 
             builder.Services.AddTransientPopup<PlaylistSelectionPopup, PlaylistSelectionPopupViewModel>();
 
@@ -50,7 +57,7 @@ namespace HeartPlayer
 
         private static void SetupSerilog()
         {
-            var flushInterval = new TimeSpan(0, 0, 1);
+            var flushInterval = new TimeSpan(0, 1, 0);
             var file = Path.Combine(FileSystem.AppDataDirectory, "Logs", "HeartPlayer.log");
 
             Log.Logger = new LoggerConfiguration()
@@ -59,7 +66,7 @@ namespace HeartPlayer
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.File(file, flushToDiskInterval: flushInterval, encoding: System.Text.Encoding.UTF8,
-                    rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+                    rollingInterval: RollingInterval.Day, retainedFileCountLimit: 2)
                 .CreateLogger();
         }
     }

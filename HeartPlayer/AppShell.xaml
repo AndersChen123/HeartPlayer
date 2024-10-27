@@ -42,15 +42,15 @@
               Text="About" />
 
     <TabBar>
-        <Tab Title="Playlists" Icon="Resources/Images/playlists.png">
-            <ShellContent Title="Playlists"
-                          ContentTemplate="{DataTemplate local:PlaylistPage}"
-                          Route="PlaylistPage" />
-        </Tab>
         <Tab Title="Videos" Icon="Resources/Images/videos.png">
             <ShellContent Title="Videos"
                           ContentTemplate="{DataTemplate local:MainPage}"
                           Route="MainPage" />
+        </Tab>
+        <Tab Title="Playlists" Icon="Resources/Images/playlists.png">
+            <ShellContent Title="Playlists"
+                  ContentTemplate="{DataTemplate local:PlaylistPage}"
+                  Route="PlaylistPage" />
         </Tab>
     </TabBar>
 

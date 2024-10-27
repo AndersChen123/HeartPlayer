@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using HeartPlayer.Models;
 using LibVLCSharp.Shared;
+using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Processing;
@@ -162,7 +163,7 @@ public sealed class ThumbnailService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error generating thumbnail for {video.Name}: {ex.Message}");
+            Log.Error(ex, $"Error generating thumbnail for {video.Name}");
             return await GetDefaultThumbnailAsync();
         }
     }
@@ -247,7 +248,7 @@ public sealed class ThumbnailService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error generating thumbnail for {folder.Name}: {ex.Message}");
+            Log.Error(ex, $"Error generating thumbnail for {folder.Name}.");
             return await GetDefaultThumbnailAsync();
         }
     }

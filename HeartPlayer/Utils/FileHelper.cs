@@ -1,27 +1,19 @@
-﻿using System;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace HeartPlayer.Utils
 {
     internal class FileHelper
     {
-        public static void SaveAsJson<T>(T t, string file)
+        public static async Task SaveAsJson<T>(T t, string file)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                Converters = { new JsonStringEnumConverter() }
-            };
-            var json = JsonSerializer.Serialize(t, options);
-            File.WriteAllText(file, json);
+            var json = JsonConvert.SerializeObject(t);
+            await File.WriteAllTextAsync(file, json);
         }
 
-        public static T ReadFromJson<T>(string file)
+        public static async Task<T> ReadFromJson<T>(string file)
         {
-            var json = File.ReadAllText(file);
-            return JsonSerializer.Deserialize<T>(json);
+            var json = await File.ReadAllTextAsync(file);
+            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }

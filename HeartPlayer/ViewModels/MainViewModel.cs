@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.Json;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +7,7 @@ using HeartPlayer.Messages;
 using HeartPlayer.Models;
 using HeartPlayer.Services;
 using HeartPlayer.Views;
+using Serilog;
 using Folder = HeartPlayer.Models.Folder;
 
 namespace HeartPlayer.ViewModels
@@ -16,6 +16,7 @@ namespace HeartPlayer.ViewModels
     {
         private readonly ThumbnailService _thumbnailService;
         private readonly IPopupService _popupService;
+        private readonly IFileService _fileService;
         private readonly PlaylistViewModel _playlistViewModel;
 
         private bool _isLoaded = false;
@@ -52,13 +53,17 @@ namespace HeartPlayer.ViewModels
         [ObservableProperty]
         private bool _isSelectionModeActive = false;
 
-        public MainViewModel(ThumbnailService thumbnailService, IPopupService popupService)
+        public MainViewModel(ThumbnailService thumbnailService, IPopupService popupService, IFileService fileService)
         {
             _thumbnailService = thumbnailService;
             _popupService = popupService;
+            _fileService = fileService;
+
             Videos = new ObservableCollection<VideoFile>();
             Folders = new ObservableCollection<Folder>();
             SelectedSortOption = new KeyValuePair<string, Enum>("Name (A-Z)", SortOption.NameAscending);
+
+            IsShowingVideos = Preferences.Get("IsShowingVideos", true);
 
             InitializeAsync();
         }
@@ -67,6 +72,13 @@ namespace HeartPlayer.ViewModels
         {
             if (_isLoaded) return;
             _isLoaded = true;
+
+            Messenger.Register<LoadVideoMessage>(this, async (recipient, message) =>
+            {
+                var folder = new Folder(message.FolderName, message.Path);
+                Folders.Add(folder);
+                await LoadVideosForFolder(folder);
+            });
 
             await LoadFolders();
             await LoadVideos();
@@ -82,24 +94,19 @@ namespace HeartPlayer.ViewModels
         {
             try
             {
-                var file = Path.Combine(FileSystem.AppDataDirectory, "folders.json");
-                if (File.Exists(file))
-                {
-                    var json = await File.ReadAllTextAsync(file);
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var loadedFolders = JsonSerializer.Deserialize<List<Folder>>(json, options);
-                    Folders = new ObservableCollection<Folder>(loadedFolders);
+                var loadedFolders = await _fileService.GetFoldersAsync();
+                Folders = new ObservableCollection<Folder>(loadedFolders);
 
-                    foreach (var folder in Folders)
-                    {
-                        folder.LoadVideos();
-                        folder.Thumbnail = await _thumbnailService.GetFolderThumbnailAsync(folder);
-                    }
-                }
+                //foreach (var folder in Folders)
+                //{
+                //    folder.LoadVideos();
+                //    folder.Thumbnail = await _thumbnailService.GetFolderThumbnailAsync(folder);
+                //}
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading folders: {ex.Message}");
+                Log.Error(ex, "Error loading folders");
+                await Shell.Current.DisplayAlert("Error", $"Error loading folders: {ex.Message}", "OK");
             }
         }
 
@@ -121,7 +128,7 @@ namespace HeartPlayer.ViewModels
                 Videos.Clear();
                 foreach (var folder in Folders)
                 {
-                    await LoadVideosForFolder(folder);
+                    await LoadVideosForFolder(folder);                    
                 }
 
                 SortVideos(); // Apply sorting after loading videos
@@ -129,8 +136,7 @@ namespace HeartPlayer.ViewModels
             }
             catch (Exception ex)
             {
-                // Handle or log the exception
-                Console.WriteLine($"Error loading videos: {ex.Message}");
+                Log.Error(ex, "Failed to load videos");
                 await Shell.Current.DisplayAlert("Error", "Failed to load videos", "OK");
             }
         }
@@ -155,7 +161,7 @@ namespace HeartPlayer.ViewModels
                     }
                 }
 
-                var videoFiles = Directory.GetFiles(folder.Path, "*.*", SearchOption.AllDirectories)
+                var videoFiles = Directory.EnumerateFiles(folder.Path, "*.*", SearchOption.AllDirectories)
                                           .Where(IsVideoFile)
                                           .Select(file => new VideoFile
                                           {
@@ -167,12 +173,16 @@ namespace HeartPlayer.ViewModels
 
                 foreach (var video in videoFiles)
                 {
+                    folder.AddVideo(video);
                     Videos.Add(video);
                 }
+
+                folder.Thumbnail = await _thumbnailService.GetFolderThumbnailAsync(folder);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading videos for folder {folder.Name}: {ex.Message}");
+                Log.Error(ex, $"Error loading videos for folder {folder.Name}");
+                await Shell.Current.DisplayAlert("Error", $"Error loading videos for folder {folder.Name}: {ex.Message}", "OK");
             }
             finally
             {
@@ -252,18 +262,23 @@ namespace HeartPlayer.ViewModels
             {
                 try
                 {
-                    var playlists = Messenger.Send<PlaylistRequestMessage>();
+                    var playlists = await _fileService.GetPlaylistsAsync();
 
-                    var result = await _popupService.ShowPopupAsync<PlaylistSelectionPopupViewModel>(onPresenting: viewModel => viewModel.SetPlaylist(playlists.Response));
+                    var result = await _popupService.ShowPopupAsync<PlaylistSelectionPopupViewModel>(onPresenting: viewModel => viewModel.SetPlaylist(playlists));
                     if (result != null && result is Playlist playlist)
                     {
-                        var message = new AddVideoToPlaylistMessage
+                        var item = playlists.FirstOrDefault(p => p.Name == playlist.Name);
+                        if (item != null)
                         {
-                            Playlist = playlist.Name,
-                            Videos = SelectedVideos.ToList()
-                        };
-
-                        Messenger.Send(message);
+                            foreach (var video in item.Videos)
+                            {
+                                if (!item.Videos.Contains(video))
+                                {
+                                    item.Videos.Add(video);
+                                }
+                            }
+                            await _fileService.SavePlaylistAsync(playlists);
+                        }
 
                         await Shell.Current.DisplayAlert("Success", $"Added {SelectedVideos.Count} videos to {playlist.Name}", "OK");
 
@@ -272,7 +287,7 @@ namespace HeartPlayer.ViewModels
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Log.Error(e, "Error adding selected videos to playlist");
                 }
             }
             else

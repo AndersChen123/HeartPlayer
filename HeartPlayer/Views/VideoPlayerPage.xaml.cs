@@ -38,6 +38,8 @@ public partial class VideoPlayerPage : ContentPage
         Title = _videos[0].Name;
         SetMediaSource(_videos[0].Path);
 
+        MaxVolume = Preferences.Get("MaxVolume", 0.8);
+
         //var tapGestureRecognizer = new TapGestureRecognizer();
         //tapGestureRecognizer.Tapped += OnScreenTapped;
         //MainGrid.GestureRecognizers.Add(tapGestureRecognizer);

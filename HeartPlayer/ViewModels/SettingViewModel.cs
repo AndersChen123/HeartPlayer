@@ -1,43 +1,44 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Text.Json;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using HeartPlayer.Messages;
 using HeartPlayer.Models;
+using HeartPlayer.Services;
+using Serilog;
 
 namespace HeartPlayer.ViewModels
 {
     public partial class SettingViewModel : ObservableObject
     {
+        private readonly IFileService _fileService;
+
         public ObservableCollection<Folder> Folders { get; } = new ObservableCollection<Folder>();
 
-        public SettingViewModel()
+        public SettingViewModel(IFileService fileService)
         {
-            LoadSavedFolders();
+            _fileService = fileService;
+
+            MaxVolume = Preferences.Get("MaxVolume", 0.8);
+            IsShowingVideos = Preferences.Get("IsShowingVideos", true);
         }
 
-        private async void LoadSavedFolders()
+        public async void LoadSavedFolders()
         {
-            try
+            Folders.Clear();
+            var loadedFolders = await _fileService.GetFoldersAsync();
+            foreach (var folder in loadedFolders)
             {
-                var file = Path.Combine(FileSystem.AppDataDirectory, "folders.json");
-                if (File.Exists(file))
-                {
-                    var json = await File.ReadAllTextAsync(file);
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var loadedFolders = JsonSerializer.Deserialize<List<Folder>>(json, options);
-                    foreach (var folder in loadedFolders)
-                    {
-                        Folders.Add(folder);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", $"Failed to load saved folders: {ex.Message}", "OK");
+                Folders.Add(folder);
             }
         }
+
+        [ObservableProperty]
+        private double _maxVolume = 0.8;
+
+        [ObservableProperty]
+        private bool _isShowingVideos = true;
 
         [RelayCommand]
         private async Task PickFolder()
@@ -49,29 +50,45 @@ namespace HeartPlayer.ViewModels
                 {
                     var folder = new Folder(result.Folder.Name, result.Folder.Path);
                     Folders.Add(folder);
+
+                    WeakReferenceMessenger.Default.Send(new LoadVideoMessage
+                    {
+                        FolderName = folder.Name,
+                        Path = folder.Path
+                    });
                 }
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Folder pick failed");
                 await Shell.Current.DisplayAlert("Error", $"Folder pick failed: {ex.Message}", "OK");
             }
         }
 
         [RelayCommand]
+        private void DeleteFolder(Folder folder)
+        {
+            Folders.Remove(folder);
+        }
+
+        [RelayCommand]
         private async Task Save()
         {
-            try
+            Preferences.Set("MaxVolume", MaxVolume);
+            Preferences.Set("IsShowingVideos", IsShowingVideos);
+
+            if (!Folders.Any()) return;
+
+            var ret = await _fileService.SaveFolderAsync(Folders.ToList());
+
+            if (ret)
             {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(Folders, options);
-                var file = Path.Combine(FileSystem.AppDataDirectory, "folders.json");
-                await File.WriteAllTextAsync(file, json);
                 await Shell.Current.DisplayAlert("Success", "Folders saved successfully", "OK");
             }
-            catch (Exception ex)
+            else
             {
-                await Shell.Current.DisplayAlert("Error", $"Failed to save folders: {ex.Message}", "OK");
+                await Shell.Current.DisplayAlert("Error", $"Failed to save folders", "OK");
             }
-        }   
+        }
     }
 }

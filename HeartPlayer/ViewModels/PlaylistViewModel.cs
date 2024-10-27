@@ -1,19 +1,15 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using HeartPlayer.Messages;
 using HeartPlayer.Models;
+using HeartPlayer.Services;
 using HeartPlayer.Views;
-using Microsoft.Maui.Controls;
-using System.IO;
 
 namespace HeartPlayer.ViewModels
 {
-    public partial class PlaylistViewModel : ObservableRecipient
+    public partial class PlaylistViewModel : ObservableObject
     {
-        private const string PlaylistFileName = "playlists.json";
+        private readonly IFileService _fileService;
 
         [ObservableProperty]
         private ObservableCollection<Playlist> _playlists = new ObservableCollection<Playlist>();
@@ -23,59 +19,27 @@ namespace HeartPlayer.ViewModels
 
         [ObservableProperty]
         private bool _isShowingVideos;
-        
+
         [ObservableProperty]
         private Playlist selectedPlaylist;
 
         [ObservableProperty]
         private string newPlaylistName;
 
-        public PlaylistViewModel()
+        public PlaylistViewModel(IFileService fileService)
         {
-            Messenger.Register<PlaylistViewModel, PlaylistRequestMessage>(this, (r, m) =>
-            {
-                m.Reply(r.Playlists.ToList());
-            });
-            Messenger.Register<PlaylistViewModel, AddVideoToPlaylistMessage>(this, (r, m) =>
-            {
-                _ = r.AddVideosToPlaylist(m);
-            }); 
+            _fileService = fileService;
+        }
 
-            LoadPlaylists();
-        }        
-
-        private async void LoadPlaylists()
+        public async void LoadPlaylists()
         {
-            try
-            {
-                string filePath = Path.Combine(FileSystem.AppDataDirectory, PlaylistFileName);
-                if (File.Exists(filePath))
-                {
-                    string json = await File.ReadAllTextAsync(filePath);
-                    var loadedPlaylists = JsonSerializer.Deserialize<List<Playlist>>(json);
-                    Playlists = new ObservableCollection<Playlist>(loadedPlaylists);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle or log the exception
-                Console.WriteLine($"Error loading playlists: {ex.Message}");
-            }
+            var loadedPlaylists = await _fileService.GetPlaylistsAsync();
+            Playlists = new ObservableCollection<Playlist>(loadedPlaylists);
         }
 
         private async Task SavePlaylists()
         {
-            try
-            {
-                string filePath = Path.Combine(FileSystem.AppDataDirectory, PlaylistFileName);
-                string json = JsonSerializer.Serialize(Playlists.ToList());
-                await File.WriteAllTextAsync(filePath, json);
-            }
-            catch (Exception ex)
-            {
-                // Handle or log the exception
-                Console.WriteLine($"Error saving playlists: {ex.Message}");
-            }
+            await _fileService.SavePlaylistAsync(Playlists.ToList());
         }
 
         [RelayCommand]
@@ -148,22 +112,6 @@ namespace HeartPlayer.ViewModels
         private async Task PlayPlaylist(Playlist playlist)
         {
             await Shell.Current.Navigation.PushAsync(new VideoPlayerPage(playlist.Videos.ToArray()));
-        }
-
-        private async Task AddVideosToPlaylist(AddVideoToPlaylistMessage m)
-        {
-            var playlist = Playlists.FirstOrDefault(p => p.Name == m.Playlist);
-            if (playlist != null)
-            {
-                foreach (var video in m.Videos)
-                {
-                    if (!playlist.Videos.Contains(video))
-                    {
-                        playlist.Videos.Add(video);
-                    }
-                }
-                await SavePlaylists();
-            }
         }
     }
 }

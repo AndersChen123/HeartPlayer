@@ -5,35 +5,66 @@
              xmlns:viewmodels="clr-namespace:HeartPlayer.ViewModels"
              Title="Settings"
              Shell.TabBarIsVisible="false">
-    <ContentPage.BindingContext>
-        <viewmodels:SettingViewModel />
-    </ContentPage.BindingContext>
-    <Grid Padding="10,5"
-          RowDefinitions="Auto,*,Auto"
+    <Grid x:Name="RootGrid"
+          Padding="10,5"
+          RowDefinitions="Auto,Auto,Auto,*,Auto"
           VerticalOptions="Fill">
-        <Button Grid.Row="0"
+        <HorizontalStackLayout Grid.Row="0" Margin="0,10,0,5">
+            <Label Text="Max volume:" VerticalOptions="Center" />
+            <Slider Background="#F0DCDCDC"
+                    Maximum="1"
+                    MaximumTrackColor="Green"
+                    Minimum="0.1"
+                    MinimumTrackColor="GreenYellow"
+                    WidthRequest="150"
+                    Value="{Binding MaxVolume, Mode=TwoWay}" />
+            <Label Text="{Binding MaxVolume, StringFormat='{0:P0}'}" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Grid.Row="1">
+            <Label Text="Default display:" VerticalOptions="Center" />
+            <RadioButton Content="Videos"
+                         GroupName="Display"
+                         IsChecked="{Binding IsShowingVideos}" />
+            <RadioButton Margin="10,0,0,0"
+                         Content="Folders"
+                         GroupName="Display"
+                         IsChecked="{Binding IsShowingFolders, Converter={StaticResource InverseBoolConverter}}" />
+        </HorizontalStackLayout>
+
+        <Button Grid.Row="2"
                 Command="{Binding PickFolderCommand}"
                 Text="Pick folder" />
 
-        <ListView Grid.Row="1"
+        <ListView Grid.Row="3"
                   HasUnevenRows="True"
                   ItemsSource="{Binding Folders}"
                   VerticalOptions="FillAndExpand">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <VerticalStackLayout Padding="5">
-                            <Label FontAttributes="Bold" Text="{Binding Path=Name}" />
-                            <Label FontSize="Small"
-                                   Text="{Binding Path=Path}"
-                                   TextColor="LightGray" />
-                        </VerticalStackLayout>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem BackgroundColor="Red"
+                                               Command="{Binding Source={x:Reference RootGrid}, Path=BindingContext.DeleteFolderCommand}"
+                                               CommandParameter="{Binding .}"
+                                               Text="Delete" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <VerticalStackLayout Padding="5">
+                                <Label FontAttributes="Bold" Text="{Binding Path=Name}" />
+                                <Label FontSize="Small"
+                                       Text="{Binding Path=Path}"
+                                       TextColor="LightGray" />
+                            </VerticalStackLayout>
+                        </SwipeView>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
-        <Button Grid.Row="2"
+        <Button Grid.Row="4"
                 Margin="0,20,0,0"
                 BackgroundColor="Green"
                 Command="{Binding SaveCommand}"

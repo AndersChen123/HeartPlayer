@@ -4,9 +4,21 @@ namespace HeartPlayer.Views
 {
     public partial class PlaylistPage : ContentPage
     {
-        public PlaylistPage()
+        public PlaylistPage(PlaylistViewModel viewModel)
         {
             InitializeComponent();
+
+            BindingContext = viewModel;
+        }
+
+        protected override void OnNavigatedTo(NavigatedToEventArgs args)
+        {
+            base.OnNavigatedTo(args);
+
+            if (BindingContext is PlaylistViewModel viewModel)
+            {
+                viewModel.LoadPlaylists();
+            }
         }
 
         protected override bool OnBackButtonPressed()
