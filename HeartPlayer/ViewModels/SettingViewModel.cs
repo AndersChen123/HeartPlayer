@@ -20,8 +20,8 @@ namespace HeartPlayer.ViewModels
         {
             _fileService = fileService;
 
-            MaxVolume = Preferences.Get("MaxVolume", 0.8);
-            IsShowingVideos = Preferences.Get("IsShowingVideos", true);
+            MaxVolume = Preferences.Default.Get("MaxVolume", 0.8);
+            IsShowingVideos = Preferences.Default.Get("IsShowingVideos", true);
         }
 
         public async void LoadSavedFolders()
@@ -49,7 +49,15 @@ namespace HeartPlayer.ViewModels
                 if (result.IsSuccessful)
                 {
                     var folder = new Folder(result.Folder.Name, result.Folder.Path);
-                    Folders.Add(folder);
+                    if (!Folders.Contains(folder))
+                    {
+                        Folders.Add(folder);
+                    }
+                    else
+                    {
+                        await Shell.Current.DisplayAlert("Error", "Folder already exists", "OK");
+                        return;
+                    }
 
                     WeakReferenceMessenger.Default.Send(new LoadVideoMessage
                     {
@@ -74,8 +82,8 @@ namespace HeartPlayer.ViewModels
         [RelayCommand]
         private async Task Save()
         {
-            Preferences.Set("MaxVolume", MaxVolume);
-            Preferences.Set("IsShowingVideos", IsShowingVideos);
+            Preferences.Default.Set("MaxVolume", MaxVolume);
+            Preferences.Default.Set("IsShowingVideos", IsShowingVideos);
 
             if (!Folders.Any()) return;
 

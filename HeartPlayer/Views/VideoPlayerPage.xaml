@@ -12,6 +12,7 @@
         <toolkit:MediaElement x:Name="MediaPlayer"
                               HorizontalOptions="Fill"
                               MediaEnded="OnMediaEnded"
+                              MediaOpened="OnMediaOpened"
                               ShouldAutoPlay="True"
                               ShouldKeepScreenOn="True"
                               ShouldShowPlaybackControls="True"

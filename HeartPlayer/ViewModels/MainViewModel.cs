@@ -61,7 +61,7 @@ namespace HeartPlayer.ViewModels
 
             Videos = new ObservableCollection<VideoFile>();
             Folders = new ObservableCollection<Folder>();
-            SelectedSortOption = new KeyValuePair<string, Enum>("Name (A-Z)", SortOption.NameAscending);
+            SelectedSortOption = new KeyValuePair<string, Enum>("Newest First", SortOption.CreationTimeDescending);
 
             IsShowingVideos = Preferences.Get("IsShowingVideos", true);
 

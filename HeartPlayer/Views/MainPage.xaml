@@ -51,21 +51,23 @@
                                   ZIndex="1000" />
                         <Frame Padding="0" CornerRadius="5">
                             <StackLayout>
-                                <Image x:Name="ThumbnailImage"
-                                       Aspect="AspectFill"
-                                       HeightRequest="96"
-                                       Source="{Binding Thumbnail}"
-                                       WidthRequest="128">
-                                    <Image.Behaviors>
-                                        <behaviors:ThumbnailLoaderBehavior VideoFile="{Binding Path=BindingContext, Source={x:Reference ThumbnailImage}}" />
-                                        <toolkit:TouchBehavior LongPressCommand="{Binding Source={x:Reference RootGrid}, Path=BindingContext.ToggleSelectionModeCommand}" LongPressDuration="1200" />
-                                    </Image.Behaviors>
-                                    <Image.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=PlayVideoCommand}" CommandParameter="{Binding .}" />
-                                    </Image.GestureRecognizers>
-                                </Image>
+                                <StackLayout BackgroundColor="Black">
+                                    <Image x:Name="ThumbnailImage"
+                                           Aspect="AspectFill"
+                                           HeightRequest="96"
+                                           HorizontalOptions="Center"
+                                           Source="{Binding Thumbnail}">
+                                        <Image.Behaviors>
+                                            <behaviors:ThumbnailLoaderBehavior VideoFile="{Binding Path=BindingContext, Source={x:Reference ThumbnailImage}}" />
+                                            <toolkit:TouchBehavior LongPressCommand="{Binding Source={x:Reference RootGrid}, Path=BindingContext.ToggleSelectionModeCommand}" LongPressDuration="1200" />
+                                        </Image.Behaviors>
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=PlayVideoCommand}" CommandParameter="{Binding .}" />
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </StackLayout>
                                 <Label FontAttributes="Bold"
-                                       LineBreakMode="WordWrap"
+                                       LineBreakMode="TailTruncation"
                                        Text="{Binding Name}" />
                             </StackLayout>
                             <Frame.GestureRecognizers>

@@ -4,12 +4,32 @@
 
 public class MyPermission : Permissions.BasePlatformPermission
 {
-    public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
+    public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+    {
+        get
+        {
+#if ANDROID
+            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Tiramisu)
             {
-                (Android.Manifest.Permission.ReadMediaVideo, true),
-                (Android.Manifest.Permission.ReadMediaAudio, true),
-                (Android.Manifest.Permission.ReadMediaImages, true)
-            }.ToArray();
+                return new List<(string androidPermission, bool isRuntime)>
+                {
+
+                    (Android.Manifest.Permission.ReadMediaVideo, true),
+                    (Android.Manifest.Permission.ReadMediaAudio, true),
+                    (Android.Manifest.Permission.ReadMediaImages, true)
+                }.ToArray();
+            }
+            else
+            {
+                return new List<(string androidPermission, bool isRuntime)>
+                {
+                    (Android.Manifest.Permission.ReadExternalStorage, true),
+                    (Android.Manifest.Permission.WriteExternalStorage, true)
+                }.ToArray();
+            }
+#endif
+        }
+    }
 }
 
 public static class PermissionHelper
