@@ -7,10 +7,6 @@
        Title="Heart Player"
        Shell.FlyoutBehavior="Flyout">
 
-    <Shell.BindingContext>
-        <viewmodels:AppShellViewModel />
-    </Shell.BindingContext>
-
     <Shell.FlyoutHeader>
         <StackLayout Orientation="Horizontal">
             <Image HeightRequest="64"

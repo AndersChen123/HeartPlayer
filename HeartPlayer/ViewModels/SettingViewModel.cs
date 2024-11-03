@@ -22,6 +22,8 @@ namespace HeartPlayer.ViewModels
 
             MaxVolume = Preferences.Default.Get("MaxVolume", 0.8);
             IsShowingVideos = Preferences.Default.Get("IsShowingVideos", true);
+            UsageDuration = Preferences.Default.Get("UsageDuration", 60);
+            ResetInterval = Preferences.Default.Get("ResetInterval", 5.0);
         }
 
         public async void LoadSavedFolders()
@@ -36,6 +38,12 @@ namespace HeartPlayer.ViewModels
 
         [ObservableProperty]
         private double _maxVolume = 0.8;
+
+        [ObservableProperty]
+        private int _usageDuration = 60;
+
+        [ObservableProperty]
+        private double _resetInterval = 5.0;
 
         [ObservableProperty]
         private bool _isShowingVideos = true;
@@ -84,6 +92,8 @@ namespace HeartPlayer.ViewModels
         {
             Preferences.Default.Set("MaxVolume", MaxVolume);
             Preferences.Default.Set("IsShowingVideos", IsShowingVideos);
+            Preferences.Default.Set("UsageDuration", UsageDuration);
+            Preferences.Default.Set("ResetInterval", ResetInterval);
 
             if (!Folders.Any()) return;
 

@@ -37,11 +37,15 @@ namespace HeartPlayer
 
             builder.Services.AddSingleton<ThumbnailService>();
             builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSingleton<UsageTrackingService>();
+
+            builder.Services.AddSingleton<AppShell>();
+            builder.Services.AddSingleton<AppShellViewModel>();
 
             builder.Services.AddScoped<MainViewModel>();
             builder.Services.AddScoped<PlaylistViewModel>();
             builder.Services.AddScoped<SettingViewModel>();
-            builder.Services.AddScoped<AboutViewModel>();
+            builder.Services.AddScoped<AboutViewModel>();                       
 
             builder.Services.AddScoped<MainPage>();
             builder.Services.AddScoped<PlaylistPage>();

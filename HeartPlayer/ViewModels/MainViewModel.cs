@@ -13,10 +13,10 @@ using Folder = HeartPlayer.Models.Folder;
 namespace HeartPlayer.ViewModels
 {
     public partial class MainViewModel : ObservableRecipient
-    {
+    {        
         private readonly ThumbnailService _thumbnailService;
         private readonly IPopupService _popupService;
-        private readonly IFileService _fileService;
+        private readonly IFileService _fileService;        
         private readonly PlaylistViewModel _playlistViewModel;
 
         private bool _isLoaded = false;
@@ -53,20 +53,21 @@ namespace HeartPlayer.ViewModels
         [ObservableProperty]
         private bool _isSelectionModeActive = false;
 
-        public MainViewModel(ThumbnailService thumbnailService, IPopupService popupService, IFileService fileService)
+        public MainViewModel(ThumbnailService thumbnailService,
+                             IPopupService popupService,
+                             IFileService fileService)
         {
             _thumbnailService = thumbnailService;
             _popupService = popupService;
-            _fileService = fileService;
-
+            _fileService = fileService;            
             Videos = new ObservableCollection<VideoFile>();
             Folders = new ObservableCollection<Folder>();
             SelectedSortOption = new KeyValuePair<string, Enum>("Newest First", SortOption.CreationTimeDescending);
 
-            IsShowingVideos = Preferences.Get("IsShowingVideos", true);
+            IsShowingVideos = Preferences.Default.Get("IsShowingVideos", true);            
 
             InitializeAsync();
-        }
+        }        
 
         public async void InitializeAsync()
         {
