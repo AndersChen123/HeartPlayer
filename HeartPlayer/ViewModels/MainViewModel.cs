@@ -129,7 +129,10 @@ namespace HeartPlayer.ViewModels
                 Videos.Clear();
                 foreach (var folder in Folders)
                 {
-                    await LoadVideosForFolder(folder);                    
+                    if (Directory.Exists(folder.Path))
+                    {
+                        await LoadVideosForFolder(folder);
+                    }
                 }
 
                 SortVideos(); // Apply sorting after loading videos

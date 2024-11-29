@@ -32,7 +32,10 @@ namespace HeartPlayer.ViewModels
             var loadedFolders = await _fileService.GetFoldersAsync();
             foreach (var folder in loadedFolders)
             {
-                Folders.Add(folder);
+                if (Directory.Exists(folder.Path))
+                {
+                    Folders.Add(folder);
+                }
             }
         }
 
